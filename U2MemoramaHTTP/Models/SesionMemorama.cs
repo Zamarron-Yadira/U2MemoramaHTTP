@@ -90,7 +90,7 @@ namespace U2MemoramaHTTP.Models
 		}
 		public void GenerarCartas()
 		{
-			Cartas = GenerarCartasMezcladas(8); // ← siempre 8 pares (16 cartas)
+			Cartas = GenerarCartasMezcladas(6); //6 pares (12 cartas)
 		}
 
 		public bool ValidarTurno(string nombre)

@@ -45,8 +45,38 @@
             align-items: center;
             gap: 1rem;
         }
+        #infoJuego {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            background-color: rgba(0, 0, 0, 0.6);
+            flex-wrap: wrap;
+            box-shadow: 0 0 10px #ff0000;
+        }
 
-        #nombreJugador {
+        .jugador-info {
+            text-align: center;
+            margin: 10px;
+        }
+
+        .turno-info {
+            width: 100%;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+
+
+        #tablero {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+
+       /* #nombreJugador {
             font-size: 1.5rem;
             font-weight: bold;
             margin-bottom: 0.5rem;
@@ -61,7 +91,9 @@
             border-radius: 10px;
             margin-bottom: 1rem;
             box-shadow: 0 0 10px #ff0000;
-        }
+        }*/
+
+
 
         #tablero {
             display: grid;
@@ -207,11 +239,17 @@
     <div id="juego" hidden>
         <div>Tiempo: <span id="tiempo">00:00</span></div>
         <div id="infoJuego">
-            <div id="nombreJugador"></div>
-            <div>Movimientos: <span id="movimientos">0</span></div>
-            <div id="nombreJugador2"></div>
-            <div>Movimientos: <span id="movimientos2">0</span></div>
-            <p><strong>Turno de:</strong> <span id="currentPlayer"></span></p>
+            <div class="jugador-info">
+                <div id="nombreJugador"></div>
+                <div>Pares: <span id="movimientos">0</span></div>
+            </div>
+            <div class="jugador-info">
+                <div id="nombreJugador2"></div>
+                <div>Pares: <span id="movimientos2">0</span></div>
+            </div>
+            <div class="turno-info">
+                <p><strong>Turno de:</strong> <span id="currentPlayer"></span></p>
+            </div>
         </div>
         <div id="tablero"></div>
         <button onclick="reiniciarJuego()">Reiniciar</button>
@@ -240,9 +278,8 @@
             { nombre: "Castiel", img: "/memorama/assets/castiel.png" },
             { nombre: "Crowley", img: "/memorama/assets/jhon.png" },
             { nombre: "Bobby", img: "/memorama/assets/jack.png" },
-            { nombre: "Lucifer", img: "/memorama/assets/charlie.png" },
-            { nombre: "Amara", img: "/memorama/assets/Amara.png" },
-            { nombre: "Crowley", img: "/memorama/assets/Crowley.jpeg" }
+            { nombre: "Lucifer", img: "/memorama/assets/charlie.png" }
+          
         ];
 
 
@@ -317,10 +354,11 @@
                     }
 
                     const cartasBarajadas = juego.Cartas;
+                    iniciarTemporizador();
 
                     if (juego.Turno == nombre) { //es mi turno
                         crearCartas(cartasBarajadas);
-                        iniciarTemporizador();
+                       
                     }
                     else {
                         crearCartas(cartasBarajadas);
@@ -347,9 +385,6 @@
 
                 console.log('Cartas:', cartas);
                 console.log('Personajes:', personajes);
-
-
-
 
                 if (personaje) {
                     const carta = document.createElement('div');
@@ -464,42 +499,6 @@
             }, 1000);
         }
 
-
-        //async function esperar() {
-        //    let json = { IdSesion: idSesion, Nombre: nombre };
-
-        //    try {
-        //        let res = await fetch("/memorama/esperando", {
-        //            method: "POST",
-        //            body: JSON.stringify(json),
-        //            headers: { "Content-Type": "application/json" }
-        //        });
-
-        //        if (res.ok) {
-        //            try {
-        //                let estado = await res.json();
-        //                actualizarVista(estado);
-
-
-        //                if (!estado.Finalizado) {
-        //                    // Continúa actualizando el estado cada segundo
-        //                    setTimeout(esperar, 1000);
-        //                }
-        //            } catch (e) {
-        //                console.error("Error al parsear JSON:", e);
-        //                // Reintentar después de un segundo si hay un error al parsear el JSON
-        //                setTimeout(esperar, 1000);
-        //            }
-        //        } else {
-        //            console.error("Error en esperar:", res.statusText);
-
-        //            setTimeout(esperar, 1000);
-        //        }
-        //    } catch (error) {
-        //        console.error("Error al realizar la solicitud:", error);
-        //        setTimeout(esperar, 1000);
-        //    }
-        //}
         async function esperar() {
             let json = { IdSesion: idSesion, Nombre: nombre };
 
@@ -522,7 +521,7 @@
                             setTimeout(esperar, 500);
                           
                         } else if (estado.finalizado) {
-                            clearInterval(intervaloTiempo); // Detener el temporizador
+                           // clearInterval(intervaloTiempo); // Detener el temporizador
 
                             const pantallaJuego = document.getElementById("juego");
                             if (pantallaJuego) pantallaJuego.hidden = true;

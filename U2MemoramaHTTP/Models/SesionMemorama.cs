@@ -18,13 +18,12 @@ namespace U2MemoramaHTTP.Models
 		public string Turno { get; private set; } = "";
 		public int ParesJugador1 { get; private set; } = 0;
 		public int ParesJugador2 { get; private set; } = 0;
-		public string Estado { get; private set; } = "jugando"; // o "finalizado"
+		public string Estado { get; private set; } = "jugando";
 
 		private int? cartaSeleccionada = null;
 		public bool EstaCompleto => Jugador1 != "" && Jugador2 != "";
 		public DateTime InicioJuego { get; private set; }  // Guarda cuándo arrancó la partida
 
-		// Propiedad calculada para saber cuánto tiempo lleva la partida (o duró, si ya terminó)
 		public TimeSpan Duracion => Estado == "finalizado"
 			? (DateTime.Now - InicioJuego)
 			: TimeSpan.Zero;
@@ -36,7 +35,6 @@ namespace U2MemoramaHTTP.Models
 		public SesionMemorama(int id)
 		{
 			Id = id;
-			//Cartas = GenerarCartasMezcladas(6); // 6 pares = 12 cartas
 			GenerarCartas();
 		}
 
@@ -64,15 +62,8 @@ namespace U2MemoramaHTTP.Models
 			}
 			if (Jugador2 != "" && Estado == "Jugando")
 			{
-				// Acabamos de completar la sesión y arrancar la partida
 				InicioJuego = DateTime.Now;
 			}
-		}
-
-		public List<int> MostrarCartasIniciales()
-		{
-			// Mostrar todas las cartas durante un breve tiempo al inicio
-			return Cartas.ToList();
 		}
 
 		private int[] GenerarCartasMezcladas(int pares)
@@ -84,8 +75,6 @@ namespace U2MemoramaHTTP.Models
 				cartas.Add(i);
 			}
 
-			//var rnd = new Random();
-			
 			return cartas.OrderBy(x => rnd.Next()).ToArray();
 		}
 		public void GenerarCartas()
@@ -102,11 +91,11 @@ namespace U2MemoramaHTTP.Models
 			indice >= 0 && indice < Cartas.Length && Cartas[indice] != -1;
 
 		public bool ValidarMovimientoDoble(int indice1, int indice2)
-{
-	return indice1 != indice2 &&
-	       ValidarMovimiento(indice1) &&
-	       ValidarMovimiento(indice2);
-}
+		{
+			return indice1 != indice2 &&
+				   ValidarMovimiento(indice1) &&
+				   ValidarMovimiento(indice2);
+		}
 
 
 		public void RealizarMovimiento(int indice1, int indice2)
@@ -156,10 +145,6 @@ namespace U2MemoramaHTTP.Models
 		}
 
 
-		//queda: ver si puedo hacer que se vean mas sincronizados los movimientos,
-		///ver lo de la pantalla final donde salen los puntajes, 
-		///checar lo de los tiempos (en uno si inicia, pero en el otro no)
-		///Mejorar la vista de inicio de servidor y las otras vistas extra (pantalla final)
 		///Ver si puedo agregar lo de seleccionar si quieres jugar solo o multijugador(EXTRA)
 		public void VoltearCartas(int indice1, int indice2)
 		{

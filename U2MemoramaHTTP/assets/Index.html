@@ -76,24 +76,6 @@
             margin-bottom: 2rem;
         }
 
-       /* #nombreJugador {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-
-        #infoJuego {
-            display: flex;
-            gap: 2rem;
-            font-size: 1.2rem;
-            background-color: rgba(0, 0, 0, 0.6);
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            box-shadow: 0 0 10px #ff0000;
-        }*/
-
-
 
         #tablero {
             display: grid;
@@ -181,13 +163,12 @@
             z-index: 9999;
             animation: aparecer 1s ease-in-out;
         }
-
         .contenedor-final {
             text-align: center;
-            background: #222;
+            background: #2a2a2a; 
             padding: 2em;
             border-radius: 20px;
-            box-shadow: 0 0 20px #000;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
             animation: subir 0.6s ease;
         }
 
@@ -231,7 +212,7 @@
     <h1>SUPERNATURAL</h1>
 
     <div id="formulario">
-        <input type="text" id="inputNombre" placeholder="Escribe tu nombre">xx
+        <input type="text" id="inputNombre" placeholder="Escribe tu nombre">
         <button id="start-button">Iniciar</button>
         <h2 id="game-status" class="status" hidden>Esperando a otro jugador...</h2>
     </div>
@@ -260,17 +241,22 @@
     <div id="pantalla-final" class="pantalla-oculta">
         <div class="contenedor-final">
             <h2>¡Juego Finalizado!</h2>
+            <p id="tiempo-final" style="margin-top: 1em; font-size: 1.1em;"></p>
             <p id="mensaje-final"></p>
             <div class="puntajes">
                 <p id="puntaje-jugador1"></p>
                 <p id="puntaje-jugador2"></p>
             </div>
+
+
             <button onclick="reiniciarJuego()">Jugar de nuevo</button>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10000;"></canvas>
+
 
     <script>
-
 
         const personajes = [
             { nombre: "Dean", img: "/memorama/assets/dean.png" },
@@ -279,9 +265,8 @@
             { nombre: "Crowley", img: "/memorama/assets/jhon.png" },
             { nombre: "Bobby", img: "/memorama/assets/jack.png" },
             { nombre: "Lucifer", img: "/memorama/assets/charlie.png" }
-          
-        ];
 
+        ];
 
         let cartas = [];
         let primera = null;
@@ -305,17 +290,15 @@
         const player1 = document.getElementById("nombreJugador");
         const player2 = document.getElementById("nombreJugador2");
         const turno = document.getElementById("currentPlayer");
-   
+
         let nombre, idSesion, soyJugador1 = false;
-
-
 
         let estado = {
             Jugador1: player1,
             Jugador2: player2,
             Turno: turno,
         }
-        // Para obtener el nombre del jugador que tiene el turno
+
         const jugadorConTurno = estado.Turno.textContent || estado.Turno.innerText;
         console.log("Jugador con turno:", jugadorConTurno);
 
@@ -356,17 +339,32 @@
                     const cartasBarajadas = juego.Cartas;
                     iniciarTemporizador();
 
-                    if (juego.Turno == nombre) { //es mi turno
-                        crearCartas(cartasBarajadas);
-                       
-                    }
-                    else {
-                        crearCartas(cartasBarajadas);
-                        esperar();
-                    }
+                    //if (juego.Turno == nombre) { //es mi turno
+                    //    crearCartas(cartasBarajadas);
+
+                    //}
+                    //else {
+                    //    crearCartas(cartasBarajadas);
+                    //    esperar();
+                    //}
 
 
-                    if (juego.Turno === nombre) habilitarTablero();
+                    //if (juego.Turno === nombre) habilitarTablero();
+
+                    // Crear cartas destapadas inicialmente
+                    crearCartas(cartasBarajadas);
+                    destaparTodasLasCartas(); 
+
+                    // Esper 2 segundos, luego las tapamos
+                    setTimeout(() => {
+                        taparTodasLasCartas();
+
+                        if (juego.Turno == nombre) {
+                            habilitarTablero();
+                        } else {
+                            esperar();
+                        }
+                    }, 2000);
                 }
             } else {
                 alert("Escribe el nombre del usuario para comenzar.");
@@ -393,11 +391,11 @@
                     carta.dataset.index = i;
 
                     carta.innerHTML = `
-                        <div class="carta-inner">
-                            <div class="carta-front" style="background-image: url('${personaje.img}')"></div>
-                            <div class="carta-back"></div>
-                        </div>
-                    `;
+                                    <div class="carta-inner">
+                                        <div class="carta-front" style="background-image: url('${personaje.img}')"></div>
+                                        <div class="carta-back"></div>
+                                    </div>
+                                `;
 
                     carta.addEventListener('click', () => jugar(i));
                     tablero.appendChild(carta);
@@ -435,14 +433,12 @@
             bloqueo = true;
 
 
-            // Dale un segundo al usuario para ver la segunda carta antes de enviar
+            //Un segundo al usuario para ver la segunda carta antes de enviar
             setTimeout(async () => {
                 const payload = {
                     Indice1: primera, Indice2: segunda, IdSesion: idSesion,
                     Nombre: jugadorConTurno
                 };
-
-                console.log("Payload:", payload); // Verifica que los valores sean correctos
 
                 try {
                     const res = await fetch("/memorama/jugada", {
@@ -451,10 +447,10 @@
                         body: JSON.stringify(payload)
                     });
 
-                    // Siempre parseamos el JSON para ver si viene error o datos válidos
+                
                     const estado = await res.json();
 
-                    // Si hay un error en el JSON, lo mostramos y salimos
+             
                     if (estado.error) {
                         alert(estado.error);
 
@@ -479,10 +475,10 @@
                             cartas[segunda].volteada = false;
                         }
 
-                        // Aquí ya es un estado válido de juego
+                       
                         actualizarVista(estado);
 
-                        // Si no es tu turno, entras a la función esperar
+                        // Si no es tu turno
                         if (!estado.EsMiTurno) esperar();
                     }
                 }
@@ -491,7 +487,7 @@
                     alert("Ocurrió un problema de comunicación con el servidor.");
 
                 } finally {
-                    // En cualquier caso, limpia el estado local de la jugada
+                    // limpia el estado local de la jugada
                     primera = null;
                     segunda = null;
                     bloqueo = false;
@@ -500,8 +496,8 @@
         }
 
         async function esperar() {
-            let json = { IdSesion: idSesion, Nombre: nombre };
 
+            let json = { IdSesion: idSesion, Nombre: nombre };
             try {
                 let res = await fetch("/memorama/esperando", {
                     method: "POST",
@@ -518,21 +514,12 @@
                         if (!estado.finalizado) {
                             // Si el juego no ha terminado, seguimos esperando
                             actualizarVista(estado);
-                            setTimeout(esperar, 500);
-                          
+
                         } else if (estado.finalizado) {
-                           // clearInterval(intervaloTiempo); // Detener el temporizador
+                            clearInterval(intervaloTiempo); // Detener el temporizador
 
                             const pantallaJuego = document.getElementById("juego");
                             if (pantallaJuego) pantallaJuego.hidden = true;
-
-                        //CHECAR PANTALLA FINAL DE PUNTAJES
-                            const pantallaFinal = document.getElementById("pantalla-final");
-                            pantallaFinal.hidden = false;
-                            pantallaFinal.classList.remove("pantalla-oculta");
-                            pantallaFinal.style.display = "flex";
-
-
 
                             actualizarVista({
                                 Cartas: estado.cartas,
@@ -544,16 +531,6 @@
                                 tiempo: formatearTiempo(estado.tiempo)
                             });
 
-                            // Mostrar mensaje personalizado
-                            const mensaje = (estado.ganador === 'empate')
-                                ? '¡Hubo un empate!'
-                                : `🏆 ¡Ganó ${estado.ganador}!`;
-
-                            document.getElementById("mensaje-final").innerText = mensaje;
-                            document.getElementById("puntaje-jugador1").innerText = `${estado.jugador1}: ${estado.paresJugador1} parejas`;
-                            document.getElementById("puntaje-jugador2").innerText = `${estado.jugador2}: ${estado.paresJugador2} parejas`;
-
-                           
                             return;
                         }
 
@@ -579,7 +556,6 @@
             // Actualizar el turno actual
             turno.innerText = estado.Turno;
 
-            // Actualizar los movimientos de ambos jugadores (pares encontrados)
             spanMovimientos.innerText = estado.ParesJugador1;
             spanMovimientos2.innerText = estado.ParesJugador2;
 
@@ -588,25 +564,25 @@
                 const carta = tablero.children[i];
                 if (valor === -1) {
                     carta.classList.add('volteada');
-                    carta.style.pointerEvents = "none"; // Desactiva clic en cartas ya emparejadas
+                    carta.style.pointerEvents = "none";
                 }
             });
 
             // Actualizar quién tiene el turno visualmente
             if (estado.Turno === player1.textContent) {
-                player1.style.color = "darkgreen";
+                player1.style.color = "red";
                 player2.style.color = "white";
             } else {
-                player2.style.color = "darkgreen";
+                player2.style.color = "red";
                 player1.style.color = "white";
             }
 
             // Verificar si el juego ha terminado (todas las cartas están volteadas)
             const juegoFinalizado = estado.Cartas.every(valor => valor === -1);
             if (juegoFinalizado) {
-                clearInterval(intervaloTiempo); // Detener el temporizador
+                clearInterval(intervaloTiempo);
 
-                // Determinar ganador
+
                 let ganador;
                 if (estado.ParesJugador1 > estado.ParesJugador2) {
                     ganador = player1.textContent;
@@ -616,13 +592,86 @@
                     ganador = "Empate";
                 }
 
-                //setTimeout(() => {
-                //    alert(`¡Juego finalizado!\n\nGanador: ${ganador}\n${player1.textContent}: ${estado.ParesJugador1} pares\n${player2.textContent}: ${estado.ParesJugador2} pares`);
-                //}, 500);
+
+                const pantallaFinal = document.getElementById("pantalla-final");
+                pantallaFinal.hidden = false;
+                pantallaFinal.classList.remove("pantalla-oculta");
+                pantallaFinal.style.display = "flex";
+
+                const mensaje = (ganador === 'Empate')
+                    ? '¡Hubo un empate!'
+                    : `🏆 ¡Ganó ${ganador}!`;
+
+                document.getElementById("mensaje-final").textContent = mensaje;
+                document.getElementById("puntaje-jugador1").textContent = `${estado.Jugador1}: ${estado.ParesJugador1} parejas`;
+                document.getElementById("puntaje-jugador2").textContent = `${estado.Jugador2}: ${estado.ParesJugador2} parejas`;
+                document.getElementById('tiempo-final').textContent = `⏱️ Tiempo total: ${tiempo} segundos`;
+
+                lanzarConfeti();
             }
         }
 
+        function actualizarCartas(cartas) {
+            cartas.forEach((valor, i) => {
+                const carta = document.querySelector(`[data-index='${i}']`);
+                if (carta) {
+                    if (valor === -1) {
+                        carta.style.visibility = "hidden";
+                    } else {
+                        const personaje = personajes[valor];
+                        carta.querySelector('.carta-front').style.backgroundImage = `url('${personaje.img}')`;
+                    }
+                }
+            });
+        }
 
+        function destaparTodasLasCartas() {
+            const cartas = document.querySelectorAll('.carta');
+            cartas.forEach(carta => {
+                carta.classList.add('volteada');
+                carta.style.pointerEvents = "none"; 
+            });
+        }
+
+        function taparTodasLasCartas() {
+            const cartas = document.querySelectorAll('.carta');
+            cartas.forEach(carta => {
+                carta.classList.remove('volteada');
+                carta.style.pointerEvents = "";
+            });
+        }
+
+        function lanzarConfeti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const myConfetti = confetti.create(canvas, { resize: true, useWorker: true });
+
+            const duration = 3 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                // Lado izquierdo
+                myConfetti({
+                    particleCount: 5,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#800080', '#40E0D0', '#ffffff']
+                });
+
+                // Lado derecho
+                myConfetti({
+                    particleCount: 4,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x:1},
+                    colors: ['#800080', '#40E0D0', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            })();
+        }
 
         function deshabilitarTablero() {
             for (let carta of tablero.children) {
@@ -652,23 +701,6 @@
             const secs = (segundos % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
         }
-
-        function actualizarCartas(cartas) {
-            cartas.forEach((valor, i) => {
-                const carta = document.querySelector(`[data-index='${i}']`);
-                if (carta) {
-                    if (valor === -1) {
-                        carta.style.visibility = "hidden";
-                    } else {
-                        const personaje = personajes[valor];
-                        carta.querySelector('.carta-front').style.backgroundImage = `url('${personaje.img}')`;
-                    }
-                }
-            });
-        }
-
-
-
 
     </script>
 </body>

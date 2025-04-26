@@ -51,7 +51,6 @@ namespace U2MemoramaHTTP.Services
 				var context = listener.GetContext();
 				new Thread(EscucharPeticiones) { IsBackground = true }.Start();
 
-				//Analizar las request
 				if (context.Request.HttpMethod == "GET")
 				{
 					string path = context.Request.Url.AbsolutePath;
@@ -90,30 +89,28 @@ namespace U2MemoramaHTTP.Services
 
 					switch (context.Request.RawUrl)
 					{
-						//case "/":
 						case "/memorama":
-							PaginaIndex = File.ReadAllBytes("assets/index.html"); //Solo por las continuas modificaciones
+							PaginaIndex = File.ReadAllBytes("assets/index.html");
 							context.Response.ContentLength64 = PaginaIndex.Length;
 							context.Response.ContentType = "text/html";
 							context.Response.StatusCode = 200;
 							context.Response.OutputStream.Write(PaginaIndex);
 
-							break;
+						break;
 					
 
 						default:
 							context.Response.StatusCode = 404;
-							break;
+						break;
 
 					}
 				}
 
-				else if (context.Request.HttpMethod == "POST") //POST
+				else if (context.Request.HttpMethod == "POST")
 				{
 					// Verificar si es una solicitud para un archivo estático
 					if (context.Request.RawUrl.StartsWith("/memorama/assets/"))
 					{
-						// Limpia el prefijo "/assets/" y usa el resto de la URL como nombre del archivo
 						string archivo = context.Request.RawUrl.Substring("/memorama/assets/".Length);
 
 						// Obtener la ruta absoluta completa al archivo
@@ -129,9 +126,9 @@ namespace U2MemoramaHTTP.Services
 						}
 						else
 						{
-							context.Response.StatusCode = 404; // No encontrado
+							context.Response.StatusCode = 404;
 						}
-						return; // Salir del método para evitar procesar más rutas
+						return;
 					}
 
 					switch (context.Request.RawUrl)
@@ -146,7 +143,6 @@ namespace U2MemoramaHTTP.Services
 
 							if (jugador != null)
 							{
-								//Tengo el nombre: jugador.Nombre
 								var ip = context.Request.RemoteEndPoint.ToString();
 
 								//Verificar si el jugador ya está en una sesión
@@ -155,18 +151,17 @@ namespace U2MemoramaHTTP.Services
 								  x.Ip2 == ip);
 
 
-								if (sesion != null)//lo encontre en alguna sesión
+								if (sesion != null)
 								{
 									context.Response.StatusCode = 400;
 								}
 								else
 								{
-									//3. VERIFICAR SI HAY ALGUNA SESIÓN ESPERANDO JUGADOR
 									sesion = sesiones.FirstOrDefault(x => x.EstaCompleto == false);
 
 									if (sesion == null)
 									{
-										sesion = new SesionMemorama(sesiones.Count + 1);// Usamos el contador de sesiones como ID
+										sesion = new SesionMemorama(sesiones.Count + 1);
 										
 										sesion.AgregarJugador(jugador.Nombre, ip);
 										sesiones.Add(sesion);
@@ -183,7 +178,7 @@ namespace U2MemoramaHTTP.Services
 									Console.WriteLine($"Jugador1: {sesion.Jugador1}, Jugador2: {sesion.Jugador2}, Completa: {sesion.EstaCompleto}");
 
 									//Long polling para primer jugador
-									while (sesion.EstaCompleto == false) //Conveniente agregarle un tiempo
+									while (sesion.EstaCompleto == false)
 									{
 										Thread.Sleep(500);
 									}
@@ -235,36 +230,7 @@ namespace U2MemoramaHTTP.Services
 										Thread.Sleep(500);
 										
 									}
-									//if (sesion.Estado == "finalizado")
-									//{
-									//	var finalizado = new
-									//	{
-									//		finalizado = true,
-									//		ganador = sesion.VerificarGanador(),
-									//		paresJugador1 = sesion.ParesJugador1,
-									//		paresJugador2 = sesion.ParesJugador2,
-									//		cartas = sesion.Cartas,
-									//		jugador1 = sesion.Jugador1,
-									//		jugador2 = sesion.Jugador2
-									//	};
-
-									//	byte[] datos = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(finalizado));
-									//	context.Response.ContentLength64 = datos.Length;
-									//	context.Response.ContentType = "application/json";
-									//	context.Response.OutputStream.Write(datos);
-									//	context.Response.StatusCode = 200;
-									//}
-									//else if (sesion.Turno != jugador.Nombre)
-									//{
-									//	var esperando = new { esperando = true };
-									//	byte[] datos = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(esperando));
-									//	context.Response.ContentLength64 = datos.Length;
-									//	context.Response.ContentType = "application/json";
-									//	context.Response.OutputStream.Write(datos);
-									//	context.Response.StatusCode = 200;
-									//}
-									//else
-									//{
+								
 										var dto = new MemoramaDTO()//enviarlo a ambos
 										{
 											Estado = sesion.Estado,
@@ -284,7 +250,6 @@ namespace U2MemoramaHTTP.Services
 										context.Response.ContentType = "application/json";
 										context.Response.OutputStream.Write(datos);
 										context.Response.StatusCode = 200;
-									//}
 								}
 							}
 							break;
@@ -330,7 +295,6 @@ namespace U2MemoramaHTTP.Services
 									context.Response.ContentLength64 = datos.Length;
 									context.Response.ContentType = "application/json";
 									context.Response.StatusCode = 200;
-									//context.Response.OutputStream.Write(datos);
 									context.Response.OutputStream.WriteAsync(datos, 0, datos.Length);
 
 								

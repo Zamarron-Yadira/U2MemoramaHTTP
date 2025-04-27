@@ -20,7 +20,7 @@
     <None Update="assets\Abaddon.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="assets\Amara.png">
+    <None Update="assets\amara.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="assets\castiel.png">
@@ -29,7 +29,7 @@
     <None Update="assets\charlie.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="assets\Crowley.jpeg">
+    <None Update="assets\crowley.jpeg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="assets\dean.png">

@@ -39,6 +39,54 @@
             margin-right: 10px;
         }
 
+        .paresDiv {
+            display: flex;
+            align-items: center;
+            align-content:center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        label {
+            margin-right: 10px;
+            text-align: center;
+        }
+
+        #lbl-nivel {
+            margin-top: 20px;
+            font-size:20px;
+            font-weight:bold;
+        }
+
+        #cantidad-pares {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 10px;
+            border: none;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            background: #444;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+            button:hover {
+                background: #666;
+            }
+
         #juego {
             display: none;
             flex-direction: column;
@@ -126,7 +174,7 @@
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
-            background-color: #000; /* opcional */
+            background-color: #000;
         }
 
 
@@ -204,6 +252,40 @@
             border-radius: 10px;
             cursor: pointer;
         }
+        /* Contenedor de los botones de cantidad de pares */
+        .cantidad-pares-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pares-button {
+            background-color: #ff0000;
+            color: #fff; 
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+            .pares-button:hover {
+                background-color: #fff;
+                color: red;
+                box-shadow: 0 0 20px #ff0000, 0 0 20px #ff0000, 0 0 20px #ff0000, 0 0 30px #000, 2px 2px 4px rgba(0, 0, 0, 0.8);
+            }
+
+            .pares-button.selected {
+                background-color: #fff;
+                color:red;
+            }
+
+            .pares-button:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
 
     </style>
 </head>
@@ -212,8 +294,19 @@
     <h1>SUPERNATURAL</h1>
 
     <div id="formulario">
+        <div class="paresDiv">
+            <label for="pares" id="lbl-nivel">Nivel:</label>
+
+            <div id="cantidad-pares" class="cantidad-pares-buttons">
+                <button class="pares-button" data-pares="4">4x4</button>
+                <button class="pares-button" data-pares="5">5x5</button>
+                <button class="pares-button" data-pares="6">6x6</button>
+            </div>
+        </div>
+        
         <input type="text" id="inputNombre" placeholder="Escribe tu nombre">
-        <button id="start-button">Iniciar</button>
+
+        <button id="start-button" class="start">Iniciar</button>
         <h2 id="game-status" class="status" hidden>Esperando a otro jugador...</h2>
     </div>
 
@@ -257,15 +350,15 @@
 
 
     <script>
-
         const personajes = [
             { nombre: "Dean", img: "/memorama/assets/dean.png" },
             { nombre: "Sam", img: "/memorama/assets/sam.png" },
             { nombre: "Castiel", img: "/memorama/assets/castiel.png" },
             { nombre: "Crowley", img: "/memorama/assets/jhon.png" },
             { nombre: "Bobby", img: "/memorama/assets/jack.png" },
-            { nombre: "Lucifer", img: "/memorama/assets/charlie.png" }
-
+            { nombre: "Lucifer", img: "/memorama/assets/charlie.png" },
+            { nombre: "Amara", img: "/memorama/assets/amara.png" },
+            { nombre: "Crowley", img: "/memorama/assets/crowley.jpeg" },
         ];
 
         let cartas = [];
@@ -302,70 +395,108 @@
         const jugadorConTurno = estado.Turno.textContent || estado.Turno.innerText;
         console.log("Jugador con turno:", jugadorConTurno);
 
+        let selectedParesButton = null;
+        let cantidadPares = null;
+
+      
+        document.querySelectorAll('.pares-button').forEach(button => {
+            button.addEventListener('click', function () {
+
+                if (!button.disabled) {
+
+                    if (selectedParesButton) {
+                        selectedParesButton.classList.remove('selected');
+                    }
+
+                    button.classList.add('selected');
+                    cantidadPares = parseInt(button.getAttribute('data-pares'), 10);
+                    selectedParesButton = button; 
+                }
+            });
+        });
+
+
         startButton.addEventListener("click", async () => {
             if (playerNameInput.value.trim()) {
                 nombre = playerNameInput.value.trim();
-                let json = { Nombre: nombre };
+
+                if (!cantidadPares) {
+                    alert("Por favor, selecciona un nivel para jugar.");
+                    return;
+                }
+              
+                if (cantidadPares < 4 || cantidadPares > 6) {
+                    alert("Por favor, selecciona un nivel para jugar.");
+                    return;
+                }
+
+                let json = { Nombre: nombre, CantidadPares: cantidadPares };
 
                 gameStatus.hidden = false;
                 playerNameInput.disabled = true;
 
-                let response = await fetch("/memorama/quierojugar", {
-                    method: "POST",
-                    body: JSON.stringify(json),
-                    headers: { "Content-Type": "application/json" }
-                });
-
-                if (response.ok) {
-                    let juego = await response.json();
-
-                    playerNameSection.hidden = true;
-                    juegoSection.style.display = 'flex';
-
-                    idSesion = juego.IdSesion;
-                    player1.innerText = juego.Jugador1;
-                    player2.innerText = juego.Jugador2;
-                    turno.innerText = juego.Turno;
+                try {
 
 
+                    let response = await fetch("/memorama/quierojugar", {
+                        method: "POST",
+                        body: JSON.stringify(json),
+                        headers: { "Content-Type": "application/json" }
+                    });
 
-                    if (juego.Jugador1 == nombre) {
-                        player1.style.color = "darkgreen";
+                    // Si la respuesta no es exitosa, manejar el error
+                    if (!response.ok) {
+                        let errorx = await response.json();
+                        alert(errorx.error);
+                        playerNameInput.disabled = false;
+                        return;
                     }
-                    else {
-                        player2.style.color = "darkgreen";
-                    }
+                    if (response.ok) {
+                        let juego = await response.json();
 
-                    const cartasBarajadas = juego.Cartas;
-                    iniciarTemporizador();
-
-                    //if (juego.Turno == nombre) { //es mi turno
-                    //    crearCartas(cartasBarajadas);
-
-                    //}
-                    //else {
-                    //    crearCartas(cartasBarajadas);
-                    //    esperar();
-                    //}
+                        playerNameSection.hidden = true;
+                        juegoSection.style.display = 'flex';
 
 
-                    //if (juego.Turno === nombre) habilitarTablero();
 
-                    // Crear cartas destapadas inicialmente
-                    crearCartas(cartasBarajadas);
-                    destaparTodasLasCartas(); 
+                        idSesion = juego.IdSesion;
+                        player1.innerText = juego.Jugador1;
+                        player2.innerText = juego.Jugador2;
+                        turno.innerText = juego.Turno;
 
-                    // Esper 2 segundos, luego las tapamos
-                    setTimeout(() => {
-                        taparTodasLasCartas();
 
-                        if (juego.Turno == nombre) {
-                            habilitarTablero();
-                        } else {
-                            esperar();
+
+                        if (juego.Jugador1 == nombre) {
+                            player1.style.color = "darkgreen";
                         }
-                    }, 2000);
+                        else {
+                            player2.style.color = "darkgreen";
+                        }
+
+                        const cartasBarajadas = juego.Cartas;
+                        iniciarTemporizador();
+
+                        // Crear cartas destapadas inicialmente
+                        crearCartas(cartasBarajadas);
+                        destaparTodasLasCartas();
+
+                        // Esper 2 segundos, luego las tapamos
+                        setTimeout(() => {
+                            taparTodasLasCartas();
+
+                            if (juego.Turno == nombre) {
+                                habilitarTablero();
+                            } else {
+                                esperar();
+                            }
+                        }, 2000);
+                    }
+                } catch (error) {
+                    console.error('Error de conexión:', error);
+                    alert("Hubo un problema con la conexión al servidor.");
                 }
+
+               
             } else {
                 alert("Escribe el nombre del usuario para comenzar.");
             }
@@ -378,7 +509,7 @@
             cartas.forEach((indice, i) => {
                 console.log(`Buscando personaje con índice: ${indice}`);
 
-                // Usamos el índice para acceder al personaje en el arreglo de personajes
+                // El índice para acceder al personaje en el arreglo de personajes
                 const personaje = personajes[indice];
 
                 console.log('Cartas:', cartas);
@@ -399,7 +530,6 @@
 
                     carta.addEventListener('click', () => jugar(i));
                     tablero.appendChild(carta);
-                    //  carta.classList.add('volteada'); // para pruebas, puedes quitar luego
 
                 }
                 else {
@@ -414,7 +544,6 @@
             // Verificar si es el turno del jugador
             const jugadorConTurno = estado.Turno.textContent || estado.Turno.innerText;
 
-            // Verificar si es el turno del jugador
             if (jugadorConTurno !== nombre) {
                 alert("No es tu turno.");
                 return;
@@ -465,7 +594,6 @@
                             console.log("¡Pareja encontrada!");
 
                             actualizarVista(estado);
-
                         }
                         else {
                             // No eran pareja, volver a tapar
@@ -475,17 +603,13 @@
                             cartas[segunda].volteada = false;
                         }
 
-                       
                         actualizarVista(estado);
 
-                        // Si no es tu turno
                         if (!estado.EsMiTurno) esperar();
                     }
                 }
                 catch (e) {
-                    console.error("Error de red o al parsear JSON:", e);
-                    alert("Ocurrió un problema de comunicación con el servidor.");
-
+                    console.error("Error de red o al comprobar el JSON:", e);
                 } finally {
                     // limpia el estado local de la jugada
                     primera = null;
@@ -505,18 +629,28 @@
                     headers: { "Content-Type": "application/json" }
                 });
 
+
+               .// let response = await fetch(`/memorama/esperando?id=${idSesion}`); //CHECAR
                 if (res.ok) {
                     try {
                         let estado = await res.json();
 
+
+                        //if (juego.Estado === "abandonado") {
+                        //    alert("El otro jugador ha abandonado la partida.");
+                        //    reiniciarJuego();
+                        //   //return;
+                        //}
+
                         actualizarVista(estado);
 
                         if (!estado.finalizado) {
+
                             // Si el juego no ha terminado, seguimos esperando
                             actualizarVista(estado);
 
                         } else if (estado.finalizado) {
-                            clearInterval(intervaloTiempo); // Detener el temporizador
+                            clearInterval(intervaloTiempo);
 
                             const pantallaJuego = document.getElementById("juego");
                             if (pantallaJuego) pantallaJuego.hidden = true;
@@ -549,9 +683,6 @@
             }
         }
 
-
-
-
         function actualizarVista(estado) {
             // Actualizar el turno actual
             turno.innerText = estado.Turno;
@@ -568,7 +699,7 @@
                 }
             });
 
-            // Actualizar quién tiene el turno visualmente
+            
             if (estado.Turno === player1.textContent) {
                 player1.style.color = "red";
                 player2.style.color = "white";
@@ -581,7 +712,6 @@
             const juegoFinalizado = estado.Cartas.every(valor => valor === -1);
             if (juegoFinalizado) {
                 clearInterval(intervaloTiempo);
-
 
                 let ganador;
                 if (estado.ParesJugador1 > estado.ParesJugador2) {
@@ -600,7 +730,7 @@
 
                 const mensaje = (ganador === 'Empate')
                     ? '¡Hubo un empate!'
-                    : `🏆 ¡Ganó ${ganador}!`;
+                    : `🏆 ¡Felicidades, Ganó ${ganador}!`;
 
                 document.getElementById("mensaje-final").textContent = mensaje;
                 document.getElementById("puntaje-jugador1").textContent = `${estado.Jugador1}: ${estado.ParesJugador1} parejas`;
@@ -624,6 +754,8 @@
                 }
             });
         }
+
+       
 
         function destaparTodasLasCartas() {
             const cartas = document.querySelectorAll('.carta');
@@ -686,6 +818,26 @@
         }
 
         function reiniciarJuego() {
+
+            //if (nombre) {
+            //    fetch("/memorama/abandonar", {
+            //        method: "POST",
+            //        body: JSON.stringify({ Nombre: nombre }),
+            //        headers: { "Content-Type": "application/json" }
+            //    });
+            //}
+
+            //idSesion = null;
+            //nombre = null;
+            //cantidadPares = null;
+
+            //gameStatus.hidden = true;
+            //playerNameInput.disabled = false;
+            //playerNameInput.value = "";
+            //playerNameSection.hidden = false;
+            //juegoSection.style.display = 'none';
+
+
             location.reload();
         }
 
@@ -701,6 +853,7 @@
             const secs = (segundos % 60).toString().padStart(2, '0');
             return `${mins}:${secs}`;
         }
+
 
     </script>
 </body>

@@ -151,9 +151,22 @@ namespace U2MemoramaHTTP.Services
 								  x.Ip2 == ip);
 
 
-								if (sesion != null)
+
+								//if (sesion != null)
+								//{
+								//	context.Response.StatusCode = 400;
+								//}
+
+								// Verificar si ya existe un jugador con el mismo nombre en alguna sesión
+								if (sesiones.Any(x => x.Jugador1 == jugador.Nombre || x.Jugador2 == jugador.Nombre))
 								{
-									context.Response.StatusCode = 400;
+									// Si ya hay un jugador con el mismo nombre en la sesión, rechazar la solicitud
+									context.Response.StatusCode = 400; // Bad Request
+									var errorResponse = new { error = "Los jugadores no pueden tener el mismo nombre." };
+									byte[] errorData = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(errorResponse));
+									context.Response.ContentLength64 = errorData.Length;
+									context.Response.ContentType = "application/json";
+									context.Response.OutputStream.Write(errorData);
 								}
 								else
 								{
@@ -161,7 +174,7 @@ namespace U2MemoramaHTTP.Services
 
 									if (sesion == null)
 									{
-										sesion = new SesionMemorama(sesiones.Count + 1);
+										sesion = new SesionMemorama(sesiones.Count + 1, jugador.CantidadPares);
 										
 										sesion.AgregarJugador(jugador.Nombre, ip);
 										sesiones.Add(sesion);
@@ -172,7 +185,7 @@ namespace U2MemoramaHTTP.Services
 									}
 									if (sesion.EstaCompleto)
 									{
-										sesion.GenerarCartas(); // Solo se generan una vez
+										sesion.GenerarCartas(jugador.CantidadPares); // Solo se generan una vez
 									}
 
 									Console.WriteLine($"Jugador1: {sesion.Jugador1}, Jugador2: {sesion.Jugador2}, Completa: {sesion.EstaCompleto}");
@@ -220,7 +233,7 @@ namespace U2MemoramaHTTP.Services
 
 								if (sesion == null)
 								{
-									context.Response.StatusCode = 404; // No encontrado
+									context.Response.StatusCode = 404;
 								}
 								else
 								{
@@ -313,7 +326,28 @@ namespace U2MemoramaHTTP.Services
 							}
 							break;
 
-						
+						//case "/memorama/abandonar":
+						//	var bufferAbandonar = new byte[context.Request.ContentLength64];
+						//	context.Request.InputStream.Read(bufferAbandonar);
+						//	var jsonAbandonar = Encoding.UTF8.GetString(bufferAbandonar);
+						//	var abandono = JsonSerializer.Deserialize<JugadorDTO>(jsonAbandonar);
+
+						//	if (abandono != null)
+						//	{
+						//		// Buscar la sesión donde estaba este jugador
+						//		var sesionAbandonada = sesiones.FirstOrDefault(x =>
+						//			x.Jugador1 == abandono.Nombre || x.Jugador2 == abandono.Nombre);
+
+						//		if (sesionAbandonada != null)
+						//		{
+						//			sesionAbandonada.MarcarComoAbandonado(); 
+						//		}
+						//	}
+
+						//	context.Response.StatusCode = 200;
+						//	break;
+
+
 
 
 					}

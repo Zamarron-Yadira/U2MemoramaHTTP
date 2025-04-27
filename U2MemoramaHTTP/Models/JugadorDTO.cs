@@ -11,6 +11,7 @@ namespace U2MemoramaHTTP.Models
 		public string Nombre { get; set; } = "";
 		public int IdSesion { get; set; } 
 		public  int Puntaje { get; set; }
+		public int CantidadPares { get; set; }
 		public TimeSpan TiempoTotal { get; set; }
 		public DateTime? TiempoInicioJugada { get; set; }
 	}

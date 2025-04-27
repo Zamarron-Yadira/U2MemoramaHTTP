@@ -32,10 +32,10 @@ namespace U2MemoramaHTTP.Models
 
 		private static readonly Random rnd = new Random();
 
-		public SesionMemorama(int id)
+		public SesionMemorama(int id, int cantidadPares)
 		{
 			Id = id;
-			GenerarCartas();
+			GenerarCartas(cantidadPares);
 		}
 
 		public void AgregarJugador(string nombre, string ip)
@@ -77,9 +77,12 @@ namespace U2MemoramaHTTP.Models
 
 			return cartas.OrderBy(x => rnd.Next()).ToArray();
 		}
-		public void GenerarCartas()
+		public void GenerarCartas(int cantidadPares)
 		{
-			Cartas = GenerarCartasMezcladas(6); //6 pares (12 cartas)
+			if (cantidadPares < 2 || cantidadPares > 6)
+				throw new ArgumentException("La cantidad de pares debe ser entre 2 y 6.");
+
+			Cartas = GenerarCartasMezcladas(cantidadPares); 
 		}
 
 		public bool ValidarTurno(string nombre)
@@ -144,14 +147,17 @@ namespace U2MemoramaHTTP.Models
 			return Cartas[indice1] == Cartas[indice2] && indice1 != indice2;
 		}
 
-
-		///Ver si puedo agregar lo de seleccionar si quieres jugar solo o multijugador(EXTRA)
 		public void VoltearCartas(int indice1, int indice2)
 		{
 			Cartas[indice1] = -1;
 			Cartas[indice2] = -1;
 
 		}
+
+		//public void MarcarComoAbandonado()
+		//{
+		//	Estado = "abandonado";
+		//}
 
 	}
 }

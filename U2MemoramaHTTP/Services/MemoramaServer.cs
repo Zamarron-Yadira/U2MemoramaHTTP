@@ -237,7 +237,7 @@ namespace U2MemoramaHTTP.Services
 								}
 								else
 								{
-									
+
 									while (sesion.Turno != jugador.Nombre && sesion.Estado != "finalizado")
 									{
 										Thread.Sleep(500);
@@ -309,12 +309,11 @@ namespace U2MemoramaHTTP.Services
 									context.Response.ContentType = "application/json";
 									context.Response.StatusCode = 200;
 									context.Response.OutputStream.WriteAsync(datos, 0, datos.Length);
-
 								
-
 								}
 								else
 								{
+
 									context.Response.StatusCode = 400;
 									var error = new { error = "Movimiento inválido o no es tu turno." };
 									var errorJson = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(error));
@@ -325,30 +324,6 @@ namespace U2MemoramaHTTP.Services
 								}
 							}
 							break;
-
-						//case "/memorama/abandonar":
-						//	var bufferAbandonar = new byte[context.Request.ContentLength64];
-						//	context.Request.InputStream.Read(bufferAbandonar);
-						//	var jsonAbandonar = Encoding.UTF8.GetString(bufferAbandonar);
-						//	var abandono = JsonSerializer.Deserialize<JugadorDTO>(jsonAbandonar);
-
-						//	if (abandono != null)
-						//	{
-						//		// Buscar la sesión donde estaba este jugador
-						//		var sesionAbandonada = sesiones.FirstOrDefault(x =>
-						//			x.Jugador1 == abandono.Nombre || x.Jugador2 == abandono.Nombre);
-
-						//		if (sesionAbandonada != null)
-						//		{
-						//			sesionAbandonada.MarcarComoAbandonado(); 
-						//		}
-						//	}
-
-						//	context.Response.StatusCode = 200;
-						//	break;
-
-
-
 
 					}
 				}

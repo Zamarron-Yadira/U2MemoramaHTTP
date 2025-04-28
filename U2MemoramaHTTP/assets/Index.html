@@ -437,7 +437,6 @@
 
                 try {
 
-
                     let response = await fetch("/memorama/quierojugar", {
                         method: "POST",
                         body: JSON.stringify(json),
@@ -458,19 +457,16 @@
                         juegoSection.style.display = 'flex';
 
 
-
                         idSesion = juego.IdSesion;
                         player1.innerText = juego.Jugador1;
                         player2.innerText = juego.Jugador2;
                         turno.innerText = juego.Turno;
 
-
-
                         if (juego.Jugador1 == nombre) {
-                            player1.style.color = "darkgreen";
+                            player1.style.color = "red";
                         }
                         else {
-                            player2.style.color = "darkgreen";
+                            player2.style.color = "red";
                         }
 
                         const cartasBarajadas = juego.Cartas;
@@ -629,23 +625,13 @@
                     headers: { "Content-Type": "application/json" }
                 });
 
-
-               .// let response = await fetch(`/memorama/esperando?id=${idSesion}`); //CHECAR
                 if (res.ok) {
                     try {
                         let estado = await res.json();
-
-
-                        //if (juego.Estado === "abandonado") {
-                        //    alert("El otro jugador ha abandonado la partida.");
-                        //    reiniciarJuego();
-                        //   //return;
-                        //}
-
+                     
                         actualizarVista(estado);
-
+                        
                         if (!estado.finalizado) {
-
                             // Si el juego no ha terminado, seguimos esperando
                             actualizarVista(estado);
 
@@ -667,7 +653,6 @@
 
                             return;
                         }
-
 
                     } catch (e) {
                         console.error("Error al parsear JSON:", e);
@@ -756,7 +741,6 @@
         }
 
        
-
         function destaparTodasLasCartas() {
             const cartas = document.querySelectorAll('.carta');
             cartas.forEach(carta => {
@@ -817,29 +801,23 @@
             }
         }
 
-        function reiniciarJuego() {
 
-            //if (nombre) {
-            //    fetch("/memorama/abandonar", {
-            //        method: "POST",
-            //        body: JSON.stringify({ Nombre: nombre }),
-            //        headers: { "Content-Type": "application/json" }
-            //    });
-            //}
+        async function reiniciarJuego() {
+            idSesion = null;
+            nombre = null;
+            cantidadPares = null;
+            estado.jugador2 = null;
+            estado.jugador1 = null;
 
-            //idSesion = null;
-            //nombre = null;
-            //cantidadPares = null;
-
-            //gameStatus.hidden = true;
-            //playerNameInput.disabled = false;
-            //playerNameInput.value = "";
-            //playerNameSection.hidden = false;
-            //juegoSection.style.display = 'none';
-
+            gameStatus.hidden = true;
+            playerNameInput.disabled = false;
+            playerNameInput.value = "";
+            playerNameSection.hidden = false;
+            juegoSection.style.display = 'none';
 
             location.reload();
         }
+
 
         function iniciarTemporizador() {
             intervaloTiempo = setInterval(() => {

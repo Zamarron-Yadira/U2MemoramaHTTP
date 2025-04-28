@@ -22,7 +22,7 @@ namespace U2MemoramaHTTP.Models
 
 		private int? cartaSeleccionada = null;
 		public bool EstaCompleto => Jugador1 != "" && Jugador2 != "";
-		public DateTime InicioJuego { get; private set; }  // Guarda cuándo arrancó la partida
+		public DateTime InicioJuego { get; private set; }
 
 		public TimeSpan Duracion => Estado == "finalizado"
 			? (DateTime.Now - InicioJuego)
@@ -100,7 +100,6 @@ namespace U2MemoramaHTTP.Models
 				   ValidarMovimiento(indice2);
 		}
 
-
 		public void RealizarMovimiento(int indice1, int indice2)
 		{
 			// Verifica si es pareja
@@ -153,11 +152,6 @@ namespace U2MemoramaHTTP.Models
 			Cartas[indice2] = -1;
 
 		}
-
-		//public void MarcarComoAbandonado()
-		//{
-		//	Estado = "abandonado";
-		//}
 
 	}
 }

@@ -544,10 +544,15 @@
                 alert("No es tu turno.");
                 return;
             }
+
+            const audioVoltear = new Audio('/memorama/assets/pop.mp3');
+            audioVoltear.play();
+
             // Voltear carta localmente
             cartas[indice].volteada = true;
             const carta = tablero.children[indice];
             carta.classList.add('volteada');
+            
 
             if (primera === null) {
                 primera = indice;
@@ -716,11 +721,15 @@
                 const mensaje = (ganador === 'Empate')
                     ? '¡Hubo un empate!'
                     : `🏆 ¡Felicidades, Ganó ${ganador}!`;
+                //sonido de ganador:
+
 
                 document.getElementById("mensaje-final").textContent = mensaje;
                 document.getElementById("puntaje-jugador1").textContent = `${estado.Jugador1}: ${estado.ParesJugador1} parejas`;
                 document.getElementById("puntaje-jugador2").textContent = `${estado.Jugador2}: ${estado.ParesJugador2} parejas`;
                 document.getElementById('tiempo-final').textContent = `⏱️ Tiempo total: ${tiempo} segundos`;
+                const audioVoltear = new Audio('/memorama/assets/victory.mp3');
+                audioVoltear.play();
 
                 lanzarConfeti();
             }
